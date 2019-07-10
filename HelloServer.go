@@ -9,7 +9,12 @@ import (
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	dump, _ := httputil.DumpRequest(r, true)
+	r.ParseForm() // PostForm で値を取得するために必要
 	fmt.Println(string(dump))
+
+	fmt.Println("Query", r.URL.Query().Encode())
+	fmt.Println("Post Values", r.PostForm.Encode())
+
 	fmt.Fprintf(w, "<html><body>hello world</body></html>")
 }
 
