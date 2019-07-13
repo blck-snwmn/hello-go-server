@@ -12,10 +12,13 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm() // PostForm で値を取得するために必要
 	fmt.Println(string(dump))
 
-	fmt.Println("Query", r.URL.Query().Encode())
-	fmt.Println("Post Values", r.PostForm.Encode())
+	query := r.URL.Query()
+	fmt.Println("Query", query)
+	fmt.Println("Post Values", r.PostForm)
 
-	fmt.Fprintf(w, "<html><body>hello world</body></html>")
+	name := query.Get("name")
+
+	fmt.Fprintf(w, "<html><body>hello world<br>%s</body></html>", name)
 }
 
 func main() {
