@@ -81,18 +81,6 @@ func useCookieHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func writeErrorHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusInternalServerError)
-}
-
-func returnErrorHandler(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "error!!", http.StatusBadRequest)
-}
-
-func returnNotFoundHandler(w http.ResponseWriter, r *http.Request) {
-	http.NotFound(w, r)
-}
-
 func main() {
 	var httpServer http.Server
 	http.HandleFunc("/", handler)
