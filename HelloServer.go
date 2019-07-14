@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"os"
+	"strconv"
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -54,6 +55,32 @@ func multipartHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
+func useCookieHandler(w http.ResponseWriter, r *http.Request) {
+	dump, _ := httputil.DumpRequest(r, true)
+	fmt.Println(string(dump))
+
+	storeCookie := &http.Cookie{
+		Name:  "COUNT",
+		Value: "1",
+	}
+	cookie, _ := r.Cookie("COUNT")
+
+	if cookie != nil {
+		if i, err := strconv.Atoi(cookie.Value); err == nil {
+			storeCookie.Value = strconv.Itoa(i + 1)
+		}
+	}
+
+	http.SetCookie(w, storeCookie)
+
+	//COUNT key exsit in Cookie
+	if cookie != nil {
+		fmt.Fprintf(w, "<html><body>cookie content is %s</body></html>", cookie.Value)
+	} else {
+		fmt.Fprintln(w, "<html><body>no cookie</body></html>")
+	}
+}
+
 func writeErrorHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusInternalServerError)
 }
@@ -75,6 +102,8 @@ func main() {
 	http.HandleFunc("/error/notFound", returnNotFoundHandler)
 
 	http.HandleFunc("/upload", multipartHandler)
+
+	http.HandleFunc("/useCookie", useCookieHandler)
 
 	log.Println("start http listen :18888")
 	httpServer.Addr = ":18888"
