@@ -24,6 +24,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func multipartHandler(w http.ResponseWriter, r *http.Request) {
+	dump, _ := httputil.DumpRequest(r, true)
+	fmt.Println(string(dump))
+
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusBadRequest)
 	}
