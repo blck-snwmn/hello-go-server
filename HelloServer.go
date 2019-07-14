@@ -21,9 +21,26 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "<html><body>hello world<br>%s</body></html>", name)
 }
 
+func writeErrorHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusInternalServerError)
+}
+
+func returnErrorHandler(w http.ResponseWriter, r *http.Request) {
+	http.Error(w, "error!!", http.StatusBadRequest)
+}
+
+func returnNotFoundHandler(w http.ResponseWriter, r *http.Request) {
+	http.NotFound(w, r)
+}
+
 func main() {
 	var httpServer http.Server
 	http.HandleFunc("/", handler)
+
+	http.HandleFunc("/error", returnErrorHandler)
+	http.HandleFunc("/error/writeError", writeErrorHandler)
+	http.HandleFunc("/error/notFound", returnNotFoundHandler)
+
 	log.Println("start http listen :18888")
 	httpServer.Addr = ":18888"
 	log.Println(httpServer.ListenAndServe())
