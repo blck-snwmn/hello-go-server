@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httputil"
+	"os"
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -19,6 +21,34 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	name := query.Get("name")
 
 	fmt.Fprintf(w, "<html><body>hello world<br>%s</body></html>", name)
+}
+
+func multipartHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+	file, _, err := r.FormFile("attachment-file")
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	defer file.Close()
+
+	savePath := "D:/hoge.txt"
+	saveFile, err := os.Create(savePath)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	defer saveFile.Close()
+
+	_, err = io.Copy(saveFile, file)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
 }
 
 func writeErrorHandler(w http.ResponseWriter, r *http.Request) {
@@ -40,6 +70,8 @@ func main() {
 	http.HandleFunc("/error", returnErrorHandler)
 	http.HandleFunc("/error/writeError", writeErrorHandler)
 	http.HandleFunc("/error/notFound", returnNotFoundHandler)
+
+	http.HandleFunc("/upload", multipartHandler)
 
 	log.Println("start http listen :18888")
 	httpServer.Addr = ":18888"
