@@ -112,6 +112,19 @@ func doPost(w http.ResponseWriter, r *http.Request) {
 	log.Println(resp.Status)
 }
 
+func doPostWithText(w http.ResponseWriter, r *http.Request) {
+	file, err := os.Open("D:/test.txt")
+	if err != nil {
+		panic(err)
+	}
+	resp, err := http.Post("http://127.0.0.1:18888/", "text/plan", file)
+	if err != nil {
+		panic(err)
+	}
+	log.Println(resp.StatusCode)
+	log.Println(resp.Status)
+}
+
 func main() {
 	var httpServer http.Server
 	http.HandleFunc("/", handler)
@@ -126,6 +139,7 @@ func main() {
 
 	http.HandleFunc("/doGet", doGet)
 	http.HandleFunc("/doPost", doPost)
+	http.HandleFunc("/doPostWithFile", doPostWithText)
 
 	log.Println("start http listen :18888")
 	httpServer.Addr = ":18888"
