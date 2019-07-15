@@ -3,9 +3,11 @@ package main
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 	"os"
 	"strconv"
 )
@@ -81,6 +83,23 @@ func useCookieHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func doGet(w http.ResponseWriter, r *http.Request) {
+	values := url.Values{
+		"name": {"hello world"},
+	}
+	resp, err := http.Get("http://127.0.0.1:18888" + "?" + values.Encode())
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Fprintln(w, string(body))
+	log.Println(string(body))
+}
+
 func main() {
 	var httpServer http.Server
 	http.HandleFunc("/", handler)
@@ -92,6 +111,8 @@ func main() {
 	http.HandleFunc("/upload", multipartHandler)
 
 	http.HandleFunc("/useCookie", useCookieHandler)
+
+	http.HandleFunc("/doGet", doGet)
 
 	log.Println("start http listen :18888")
 	httpServer.Addr = ":18888"
