@@ -100,6 +100,18 @@ func doGet(w http.ResponseWriter, r *http.Request) {
 	log.Println(string(body))
 }
 
+func doPost(w http.ResponseWriter, r *http.Request) {
+	values := url.Values{
+		"name": {"hello world post"},
+	}
+	resp, err := http.PostForm("http://127.0.0.1:18888", values)
+	if err != nil {
+		panic(err)
+	}
+	log.Println(resp.StatusCode)
+	log.Println(resp.Status)
+}
+
 func main() {
 	var httpServer http.Server
 	http.HandleFunc("/", handler)
@@ -113,6 +125,7 @@ func main() {
 	http.HandleFunc("/useCookie", useCookieHandler)
 
 	http.HandleFunc("/doGet", doGet)
+	http.HandleFunc("/doPost", doPost)
 
 	log.Println("start http listen :18888")
 	httpServer.Addr = ":18888"
