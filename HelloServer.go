@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -125,6 +127,34 @@ func doPostWithText(w http.ResponseWriter, r *http.Request) {
 	log.Println(resp.Status)
 }
 
+func doPostWithMultipart(w http.ResponseWriter, r *http.Request) {
+	var buffer bytes.Buffer
+	//boundary も決まる
+	writer := multipart.NewWriter(&buffer)
+	writer.WriteField("name", "bob")
+	writer.WriteField("greeting", "hello world")
+
+	//application/octet-stream になる
+	fileWriter, err := writer.CreateFormFile("attachment-file", "D:/test.txt")
+	if err != nil {
+		panic(err)
+	}
+	file, err := os.Open("D:/test.txt")
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+	io.Copy(fileWriter, file)
+	writer.Close()
+
+	resp, err := http.Post("http://127.0.0.1:18888/upload", writer.FormDataContentType(), &buffer)
+	if err != nil {
+		panic(err)
+	}
+	log.Println(resp.StatusCode)
+	log.Println(resp.Status)
+}
+
 func main() {
 	var httpServer http.Server
 	http.HandleFunc("/", handler)
@@ -140,6 +170,7 @@ func main() {
 	http.HandleFunc("/doGet", doGet)
 	http.HandleFunc("/doPost", doPost)
 	http.HandleFunc("/doPostWithFile", doPostWithText)
+	http.HandleFunc("/doPostWithMultipart", doPostWithMultipart)
 
 	log.Println("start http listen :18888")
 	httpServer.Addr = ":18888"
