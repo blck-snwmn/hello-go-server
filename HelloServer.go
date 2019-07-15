@@ -8,6 +8,7 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
+	"net/http/cookiejar"
 	"net/http/httputil"
 	"net/textproto"
 	"net/url"
@@ -103,6 +104,30 @@ func doGet(w http.ResponseWriter, r *http.Request) {
 	log.Println(string(body))
 }
 
+func doGetWithCookie(w http.ResponseWriter, r *http.Request) {
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		panic(err)
+	}
+	client := http.Client{
+		Jar: jar,
+	}
+	for index := 0; index < 10; index++ {
+		resp, err := client.Get("http://127.0.0.1:18888/useCookie")
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+		dump, err := httputil.DumpResponse(resp, true)
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+		//カウントが進むことを確認できる
+		fmt.Println(string(dump))
+	}
+}
+
 func doPost(w http.ResponseWriter, r *http.Request) {
 	values := url.Values{
 		"name": {"hello world post"},
@@ -173,6 +198,7 @@ func main() {
 	http.HandleFunc("/useCookie", useCookieHandler)
 
 	http.HandleFunc("/doGet", doGet)
+	http.HandleFunc("/doGetWithCooke", doGetWithCookie)
 	http.HandleFunc("/doPost", doPost)
 	http.HandleFunc("/doPostWithFile", doPostWithText)
 	http.HandleFunc("/doPostWithMultipart", doPostWithMultipart)
