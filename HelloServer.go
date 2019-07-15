@@ -185,6 +185,33 @@ func doPostWithMultipart(w http.ResponseWriter, r *http.Request) {
 	log.Println(resp.Status)
 }
 
+func proxyDummy(w http.ResponseWriter, r *http.Request) {
+	//proxy側が実際のURLへ取得しにいかないため、
+	//あくまでproxyの設定をしたURLへ通信していることを確認
+	url, err := url.Parse("http://127.0.0.1:18888")
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	client := http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyURL(url),
+		},
+	}
+	resp, err := client.Get("https://github.com")
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	dump, err := httputil.DumpResponse(resp, true)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	// /への結果が表示される
+	fmt.Println(string(dump))
+}
+
 func main() {
 	var httpServer http.Server
 	http.HandleFunc("/", handler)
@@ -202,6 +229,8 @@ func main() {
 	http.HandleFunc("/doPost", doPost)
 	http.HandleFunc("/doPostWithFile", doPostWithText)
 	http.HandleFunc("/doPostWithMultipart", doPostWithMultipart)
+
+	http.HandleFunc("/proxyDummy", proxyDummy)
 
 	log.Println("start http listen :18888")
 	httpServer.Addr = ":18888"
