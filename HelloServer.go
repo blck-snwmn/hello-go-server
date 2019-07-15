@@ -9,6 +9,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/http/httputil"
+	"net/textproto"
 	"net/url"
 	"os"
 	"strconv"
@@ -135,7 +136,11 @@ func doPostWithMultipart(w http.ResponseWriter, r *http.Request) {
 	writer.WriteField("greeting", "hello world")
 
 	//application/octet-stream になる
-	fileWriter, err := writer.CreateFormFile("attachment-file", "D:/test.txt")
+	// fileWriter, err := writer.CreateFormFile("attachment-file", "D:/test.txt")
+	part := make(textproto.MIMEHeader)
+	part.Set("Content-Type", "text/plain")
+	part.Set("Content-Disposition", `form-data; name="attachment-file"; filename="test.txt"`)
+	fileWriter, err := writer.CreatePart(part)
 	if err != nil {
 		panic(err)
 	}
