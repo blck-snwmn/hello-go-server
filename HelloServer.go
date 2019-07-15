@@ -212,6 +212,23 @@ func proxyDummy(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(string(dump))
 }
 
+func doPut(w http.ResponseWriter, r *http.Request) {
+	client := &http.Client{}
+	request, err := http.NewRequest("PUT", "http://127.0.0.1:18888", nil)
+	if err != nil {
+		panic(err)
+	}
+	resp, err := client.Do(request)
+	if err != nil {
+		panic(err)
+	}
+	dump, err := httputil.DumpResponse(resp, true)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(dump))
+}
+
 func main() {
 	var httpServer http.Server
 	http.HandleFunc("/", handler)
@@ -229,6 +246,7 @@ func main() {
 	http.HandleFunc("/doPost", doPost)
 	http.HandleFunc("/doPostWithFile", doPostWithText)
 	http.HandleFunc("/doPostWithMultipart", doPostWithMultipart)
+	http.HandleFunc("/doPut", doPut)
 
 	http.HandleFunc("/proxyDummy", proxyDummy)
 
