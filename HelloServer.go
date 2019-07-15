@@ -14,6 +14,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -213,8 +214,19 @@ func proxyDummy(w http.ResponseWriter, r *http.Request) {
 }
 
 func doPut(w http.ResponseWriter, r *http.Request) {
+	//NewRequestの第三引数の渡し方は、http.PostForm等参照
+	values := url.Values{"greeting": {"put values"}}
+
 	client := &http.Client{}
-	request, err := http.NewRequest("PUT", "http://127.0.0.1:18888", nil)
+
+	request, err := http.NewRequest(
+		"PUT",
+		"http://127.0.0.1:18888",
+		strings.NewReader(values.Encode()),
+	)
+	//ParseForm の対象にするため
+	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
 	if err != nil {
 		panic(err)
 	}
