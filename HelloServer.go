@@ -252,7 +252,9 @@ func main() {
 	http.HandleFunc("/upload", multipartHandler)
 
 	http.HandleFunc("/useCookie", useCookieHandler)
-
+	//注意
+	// respnse body をすべて読み切らない場合、
+	// keep alive を利用できない
 	http.HandleFunc("/doGet", doGet)
 	http.HandleFunc("/doGetWithCooke", doGetWithCookie)
 	http.HandleFunc("/doPost", doPost)
