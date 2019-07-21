@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/tls"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -241,6 +242,30 @@ func doPut(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(string(dump))
 }
 
+func doGetToHTTPS(w http.ResponseWriter, r *http.Request) {
+	client := &http.Client{
+		Transport: &http.Transport{
+			//証明書の検証を行わない
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+	}
+
+	values := url.Values{
+		"name": {"hello world"},
+	}
+	resp, err := client.Get("https://localhost:18888" + "?" + values.Encode())
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Fprintln(w, string(body))
+	log.Println(string(body))
+}
+
 func main() {
 	var httpServer http.Server
 	http.HandleFunc("/", handler)
@@ -263,6 +288,8 @@ func main() {
 	http.HandleFunc("/doPut", doPut)
 
 	http.HandleFunc("/proxyDummy", proxyDummy)
+
+	http.HandleFunc("/doGetToHTTPS", doGetToHTTPS)
 
 	log.Println("start http listen :18888")
 	httpServer.Addr = ":18888"
