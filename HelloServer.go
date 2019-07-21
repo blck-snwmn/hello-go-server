@@ -266,5 +266,10 @@ func main() {
 
 	log.Println("start http listen :18888")
 	httpServer.Addr = ":18888"
-	log.Println(httpServer.ListenAndServe())
+
+	//http
+	// log.Println(httpServer.ListenAndServe())
+
+	//オレオレ証明書による https 接続
+	log.Println(httpServer.ListenAndServeTLS("./server.crt", "./server.key"))
 }

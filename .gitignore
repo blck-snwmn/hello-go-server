@@ -13,3 +13,7 @@
 
 # vscode debug
 __debug_bin
+
+# cert
+*.crt
+*.key
