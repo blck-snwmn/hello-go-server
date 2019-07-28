@@ -291,6 +291,8 @@ func main() {
 
 	http.HandleFunc("/doGetToHTTPS", doGetToHTTPS)
 
+	http.HandleFunc("/websocket", webSocketHandler)
+
 	log.Println("start http listen :18888")
 	httpServer.Addr = ":18888"
 
