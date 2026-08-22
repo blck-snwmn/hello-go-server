@@ -3,7 +3,7 @@ package main
 import (
 	"crypto/tls"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -52,12 +52,14 @@ func doGetToHTTPS(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Fprintln(w, string(body))
+	_, _ = fmt.Fprintln(w, string(body))
 	log.Println(string(body))
 }
 
