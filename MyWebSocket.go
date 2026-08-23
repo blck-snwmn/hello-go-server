@@ -19,20 +19,20 @@ var upgrader = websocket.Upgrader{
 
 func sendMessageHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
-	tick := time.NewTicker(time.Second)
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
-	defer conn.Close()
-	for {
-		select {
-		case <-tick.C:
-			err = conn.WriteMessage(websocket.TextMessage, []byte("hello websocket"))
-			if err != nil {
-				log.Fatal(err)
-				return
-			}
+	defer func() {
+		_ = conn.Close()
+	}()
+	tick := time.NewTicker(time.Second)
+	defer tick.Stop()
+	for range tick.C {
+		err = conn.WriteMessage(websocket.TextMessage, []byte("hello websocket"))
+		if err != nil {
+			log.Fatal(err)
+			return
 		}
 	}
 }
@@ -42,7 +42,9 @@ func webSocketHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 		return
 	}
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 	for {
 		_, _, err := conn.ReadMessage()
 		if err != nil {

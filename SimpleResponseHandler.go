@@ -12,7 +12,10 @@ import (
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	dump, _ := httputil.DumpRequest(r, true)
-	r.ParseForm() // PostForm で値を取得するために必要
+	if err := r.ParseForm(); err != nil { // PostForm で値を取得するために必要
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 	fmt.Println(string(dump))
 
 	query := r.URL.Query()
@@ -21,7 +24,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	name := query.Get("name")
 
-	fmt.Fprintf(w, "<html><body>hello world<br>%s</body></html>", name)
+	_, _ = fmt.Fprintf(w, "<html><body>hello world<br>%s</body></html>", name)
 }
 
 func multipartHandler(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +39,9 @@ func multipartHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 		return
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	savePath := "D:/hoge.txt"
 	saveFile, err := os.Create(savePath)
@@ -44,7 +49,9 @@ func multipartHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 		return
 	}
-	defer saveFile.Close()
+	defer func() {
+		_ = saveFile.Close()
+	}()
 
 	_, err = io.Copy(saveFile, file)
 	if err != nil {
@@ -75,8 +82,8 @@ func useCookieHandler(w http.ResponseWriter, r *http.Request) {
 
 	//COUNT key exsit in Cookie
 	if cookie != nil {
-		fmt.Fprintf(w, "<html><body>cookie content is %s</body></html>", cookie.Value)
+		_, _ = fmt.Fprintf(w, "<html><body>cookie content is %s</body></html>", cookie.Value)
 	} else {
-		fmt.Fprintln(w, "<html><body>no cookie</body></html>")
+		_, _ = fmt.Fprintln(w, "<html><body>no cookie</body></html>")
 	}
 }

@@ -1,0 +1,5 @@
+module github.com/blck-snwmn/hello-go-server
+
+go 1.27.0
+
+require github.com/gorilla/websocket v1.5.3

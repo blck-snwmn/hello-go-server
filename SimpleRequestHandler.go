@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -24,12 +23,14 @@ func doGet(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Fprintln(w, string(body))
+	_, _ = fmt.Fprintln(w, string(body))
 	log.Println(string(body))
 }
 
@@ -86,8 +87,12 @@ func doPostWithMultipart(w http.ResponseWriter, r *http.Request) {
 	var buffer bytes.Buffer
 	//boundary も決まる
 	writer := multipart.NewWriter(&buffer)
-	writer.WriteField("name", "bob")
-	writer.WriteField("greeting", "hello world")
+	if err := writer.WriteField("name", "bob"); err != nil {
+		panic(err)
+	}
+	if err := writer.WriteField("greeting", "hello world"); err != nil {
+		panic(err)
+	}
 
 	//application/octet-stream になる
 	// fileWriter, err := writer.CreateFormFile("attachment-file", "D:/test.txt")
@@ -102,9 +107,15 @@ func doPostWithMultipart(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	defer file.Close()
-	io.Copy(fileWriter, file)
-	writer.Close()
+	defer func() {
+		_ = file.Close()
+	}()
+	if _, err := io.Copy(fileWriter, file); err != nil {
+		panic(err)
+	}
+	if err := writer.Close(); err != nil {
+		panic(err)
+	}
 
 	resp, err := http.Post("http://127.0.0.1:18888/upload", writer.FormDataContentType(), &buffer)
 	if err != nil {
