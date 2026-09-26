@@ -42,7 +42,7 @@ func doGetWithCookie(w http.ResponseWriter, r *http.Request) {
 	client := http.Client{
 		Jar: jar,
 	}
-	for index := 0; index < 10; index++ {
+	for range 10 {
 		resp, err := client.Get("http://127.0.0.1:18888/useCookie")
 		if err != nil {
 			log.Fatal(err)
